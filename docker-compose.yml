@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  database:
+    image: mariadb:${MARIA_DB_VERISON:-latest}
+    environment:
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-forex}
+      # You should definitely change the password in production
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-password}
+      MARIADB_USER: ${MARIADB_USER:-forex}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-password}
+    volumes:
+      - database_rust:/var/lib/mariadb/data:rw
+      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
+
+volumes:
+  database_rust:
