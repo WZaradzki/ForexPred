@@ -1,14 +1,16 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
+use domains::data::{
+    configs::currencies::Currencies, services::exchange_api_service::ExchangeRateApiService,
+};
 use repository::base::Repositories;
 use reqwest;
 use scheduler::scheduler::start_scheduler;
 use serde::Serialize;
 
-use crate::domains::data::config::Currencies;
+use crate::domains::currency_rate::models::currency::{Currency, CurrencyCreateValidator};
 
 // mod api;
 mod domains;
-mod models;
 mod repository;
 mod scheduler;
 
@@ -56,12 +58,18 @@ async fn not_found() -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let exchange_rate_api = domains::data::exchange_rate::ExchangeRateApi::new();
-    let usd = Currencies::USD;
+    //    let exchangeRateService = ExchangeRateApiService::new();
 
-    let response = exchange_rate_api.get_latest_by_currency(usd.get_iso_4217()).await?;
+    //    let response = exchangeRateService.get_rate_by_currency_pair(Currencies::USD, Currencies::PLN).await?;
 
-    dbg!(response);
+    let currency_repository = Repositories::new().currency_repository;
 
+    let currency = CurrencyCreateValidator {
+        name: "Polish Zloty".to_string(),
+        iso: "PLN".to_string(),
+    };
+    let created_currency = currency_repository.create_currency(currency);
+
+    dbg!(created_currency);
     Ok(())
 }
