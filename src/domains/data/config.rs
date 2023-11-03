@@ -1,12 +1,11 @@
-pub struct ExchangeRateApiConfig {
-    pub base_url: String,
-    access_key: String,
+pub enum Currencies {
+    USD,
 }
 
-impl ExchangeRateApiConfig {
-    pub fn default() -> Self {
-        base
-
-        Self { base_url, access_key }
+impl Currencies {
+    pub fn get_iso_4217(&self) -> &'static str {
+        match *self {
+            Currencies::USD => "USD",
+        }
     }
 }

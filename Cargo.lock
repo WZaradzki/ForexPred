@@ -601,6 +601,7 @@ dependencies = [
  "env_logger",
  "reqwest",
  "serde",
+ "serde_json",
  "tokio",
  "tokio_schedule",
  "uuid",

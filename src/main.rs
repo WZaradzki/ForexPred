@@ -1,14 +1,16 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use repository::base::Repositories;
+use reqwest;
 use scheduler::scheduler::start_scheduler;
 use serde::Serialize;
-use reqwest;
+
+use crate::domains::data::config::Currencies;
 
 // mod api;
+mod domains;
 mod models;
 mod repository;
 mod scheduler;
-mod domains;
 
 #[derive(Serialize)]
 pub struct Response {
@@ -54,10 +56,10 @@ async fn not_found() -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> Result<(), reqwest::Error> {
-    let response = reqwest::get("https://httpbin.org/ip")
-        .await?
-        .text()
-        .await?;
+    let exchange_rate_api = domains::data::exchange_rate::ExchangeRateApi::new();
+    let usd = Currencies::USD;
+
+    let response = exchange_rate_api.get_latest_by_currency(usd.get_iso_4217()).await?;
 
     dbg!(response);
 
