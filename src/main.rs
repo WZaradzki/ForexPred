@@ -2,11 +2,13 @@ use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 use repository::base::Repositories;
 use scheduler::scheduler::start_scheduler;
 use serde::Serialize;
+use reqwest;
 
 // mod api;
 mod models;
 mod repository;
 mod scheduler;
+mod domains;
 
 #[derive(Serialize)]
 pub struct Response {
@@ -28,24 +30,36 @@ async fn not_found() -> HttpResponse {
     HttpResponse::NotFound().json(response)
 }
 
+// #[actix_web::main]
+// async fn main() -> std::io::Result<()> {
+//     env_logger::init();
+
+//     let repositories = Repositories::new();
+//     let app_data: web::Data<_> = web::Data::new(repositories);
+
+//     start_scheduler().await;
+
+//     HttpServer::new(move || {
+//         App::new()
+//             .app_data(app_data.clone())
+//             // .configure(api::api::config)
+//             .service(healthcheck)
+//             .default_service(web::route().to(not_found))
+//             .wrap(actix_web::middleware::Logger::default())
+//     })
+//     .bind(("127.0.0.1", 7894))?
+//     .run()
+//     .await
+// }
+
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    env_logger::init();
+async fn main() -> Result<(), reqwest::Error> {
+    let response = reqwest::get("https://httpbin.org/ip")
+        .await?
+        .text()
+        .await?;
 
-    let repositories = Repositories::new();
-    let app_data: web::Data<_> = web::Data::new(repositories);
+    dbg!(response);
 
-    start_scheduler().await;
-
-    HttpServer::new(move || {
-        App::new()
-            .app_data(app_data.clone())
-            // .configure(api::api::config)
-            .service(healthcheck)
-            .default_service(web::route().to(not_found))
-            .wrap(actix_web::middleware::Logger::default())
-    })
-    .bind(("127.0.0.1", 7894))?
-    .run()
-    .await
+    Ok(())
 }
