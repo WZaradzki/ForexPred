@@ -1,18 +1,16 @@
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
-use domains::data::{
-    configs::currencies::Currencies, services::exchange_api_service::ExchangeRateApiService,
-};
-use repository::base::Repositories;
+
 use reqwest;
-use scheduler::scheduler::start_scheduler;
+// use scheduler::scheduler::start_scheduler;
 use serde::Serialize;
 
-use crate::domains::currency_rate::models::currency::{Currency, CurrencyCreateValidator};
+use crate::currency::application::{service::currency_service::CurrencyService, validator::create_currency_validator::CurrencyCreateValidator};
 
-// mod api;
-mod domains;
-mod repository;
-mod scheduler;
+
+
+mod currency;
+mod rates;
+mod shared;
 
 #[derive(Serialize)]
 pub struct Response {
@@ -58,17 +56,13 @@ async fn not_found() -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> Result<(), reqwest::Error> {
-    //    let exchangeRateService = ExchangeRateApiService::new();
+    let currency_service = CurrencyService::new();
 
-    //    let response = exchangeRateService.get_rate_by_currency_pair(Currencies::USD, Currencies::PLN).await?;
-
-    let currency_repository = Repositories::new().currency_repository;
-
-    let currency = CurrencyCreateValidator {
-        name: "Polish Zloty".to_string(),
-        iso: "PLN".to_string(),
+    let currencyValidator = CurrencyCreateValidator {
+        name: "Dollar".to_string(),
+        iso: "USD".to_string(),
     };
-    let created_currency = currency_repository.create_currency(currency);
+    let created_currency = currency_service.create(currencyValidator).expect("Error creating new currency");
 
     dbg!(created_currency);
     Ok(())
