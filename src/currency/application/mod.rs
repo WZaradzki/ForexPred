@@ -3,3 +3,4 @@
 // pub mod model;
 pub mod service;
 pub mod validator;
+pub mod event;

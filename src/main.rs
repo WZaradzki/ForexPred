@@ -58,11 +58,11 @@ async fn not_found() -> HttpResponse {
 async fn main() -> Result<(), reqwest::Error> {
     let currency_service = CurrencyService::new();
 
-    let currencyValidator = CurrencyCreateValidator {
+    let currency_validator = CurrencyCreateValidator {
         name: "Dollar".to_string(),
         iso: "USD".to_string(),
     };
-    let created_currency = currency_service.create(currencyValidator).expect("Error creating new currency");
+    let created_currency = currency_service.create(currency_validator).expect("Error creating new currency");
 
     dbg!(created_currency);
     Ok(())
