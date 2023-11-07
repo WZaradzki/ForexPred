@@ -1,12 +1,16 @@
+use std::sync::Arc;
+
 use actix_web::{get, web, App, HttpResponse, HttpServer, Responder};
 
+use diesel::r2d2::event;
 use reqwest;
 // use scheduler::scheduler::start_scheduler;
 use serde::Serialize;
 
-use crate::currency::application::{service::currency_service::CurrencyService, validator::create_currency_validator::CurrencyCreateValidator};
-
-
+use crate::currency::application::{
+    service::currency_service::CurrencyService,
+    validator::create_currency_validator::CurrencyCreateValidator,
+};
 
 mod currency;
 mod rates;
@@ -59,11 +63,9 @@ async fn main() -> Result<(), reqwest::Error> {
     let currency_service = CurrencyService::new();
 
     let currency_validator = CurrencyCreateValidator {
-        name: "Dollar".to_string(),
-        iso: "USD".to_string(),
+        name: "Rubl".to_string(),
+        iso: "NDZ".to_string(),
     };
-    let created_currency = currency_service.create(currency_validator).expect("Error creating new currency");
-
-    dbg!(created_currency);
+    let _ = currency_service.create(currency_validator).await;
     Ok(())
 }

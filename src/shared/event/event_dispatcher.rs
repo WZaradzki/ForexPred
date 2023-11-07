@@ -1,24 +1,40 @@
-use crate::shared::aggregate::aggregate_root::EventHandler;
+use once_cell::sync::Lazy;
+use std::sync::Arc;
 
 use super::event_root::Event;
 
-pub struct BaseEventDispatcher {
-    pub listeners: Vec<Box<dyn EventHandler>>,
+pub static EVENT_DISPATCHER: Lazy<EventDispatcher> = Lazy::new(|| EventDispatcher::new());
+
+trait MyEventListener: Send + Sync {
+    fn on_event(&self, event: &dyn Event);
 }
 
-pub trait EventDispatcher {
-    fn register_listener(&mut self, listener: Box<dyn EventHandler>);
-    fn dispatch(&self, event: &dyn Event);
+pub struct MyEventListenerImpl;
+
+impl MyEventListener for MyEventListenerImpl {
+    fn on_event(&self, event: &dyn Event) {
+        let _ = event.handle();
+    }
 }
 
-// impl EventDispatcher for BaseEventDispatcher {
-//     fn register_listener(&mut self, listener: Box<dyn EventHandler>) {
-//         self.listeners.push(listener);
-//     }
+pub struct EventDispatcher {
+    listeners: Vec<Arc<dyn MyEventListener>>,
+}
 
-//     fn dispatch(&self, event: &dyn Event) {
-//         for listener in &self.listeners {
-//             listener.handle(event);
-//         }
-//     }
-// }
+impl EventDispatcher {
+    pub fn new() -> Self {
+        let listeners = vec![Arc::new(MyEventListenerImpl {}) as Arc<dyn MyEventListener>];
+
+        EventDispatcher { listeners }
+    }
+
+    // pub fn add_listener(&mut self, listener: Arc<dyn MyEventListener>) {
+    //     self.listeners.push(listener);
+    // }
+
+    pub async fn dispatch_event(&self, event: &dyn Event) {
+        for listener in &self.listeners {
+            listener.on_event(event);
+        }
+    }
+}
